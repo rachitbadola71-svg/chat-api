@@ -59,8 +59,10 @@ public class UserService {
         if (old_room.isPresent()) {
             ChatRoom room = old_room.get();
             if (user.getChatRooms().contains(room)) {
+                user.getChatRooms().remove(room);
                 usersRepository.save(user);
-                return ResponseEntity.ok().body("Room leaved successfully");
+                log.info("User {} left room {}", userId, roomId);
+                return ResponseEntity.ok().body("Room left successfully");
             }
             return ResponseEntity.status(403).body("User is not this  room");
         }
