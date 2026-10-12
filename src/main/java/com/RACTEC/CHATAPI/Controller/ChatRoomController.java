@@ -27,14 +27,20 @@ public class ChatRoomController {
         this.chatRoomRepository = chatRoomRepository;
     }
 
+
     @PostMapping("/api/chatroom")
-    public ResponseEntity<?> createRoom (@RequestBody ChatRoom new_chatRoom) {
-      if(chatRoomRepository.existsByChatRoomName(new_chatRoom.getChatRoomName())) {
-           return ResponseEntity.status(403).body("Room already exists") ;
-        }                                        // create a new chatroom
-      chatRoomRepository.save(new_chatRoom);
-      return ResponseEntity.ok().body("chat room created successfully");
-}
+    public ResponseEntity<?> createRoom(@RequestBody ChatRoom new_chatRoom) {
+        String name = new_chatRoom.getChatRoomName();
+
+        if (name == null || name.isBlank()) {
+            return ResponseEntity.status(400).body("chatRoomName is required");
+        }
+        if (chatRoomRepository.existsByChatRoomName(name)) {
+            return ResponseEntity.status(403).body("Room already exists");
+        }
+        chatRoomRepository.save(new_chatRoom);
+        return ResponseEntity.ok().body("chat room created successfully");
+    }
 
     @GetMapping("/api/chatroom") //
     public List<ChatRoom> get_allrooms() {return chatRoomRepository.findAll();}
