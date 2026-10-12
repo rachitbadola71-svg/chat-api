@@ -31,19 +31,26 @@ ChatRoomService {
         this.messageRepository = messageRepository;
     }
 
+    // CREATE A NEW CHATROOM
     public ResponseEntity<?> createRoom(ChatRoom new_chatRoom) {
-        if (chatRoomRepository.existsByChatRoomName(new_chatRoom.getChatRoomName())) {
+        String name = new_chatRoom.getChatRoomName();
+        if (name == null || name.isBlank()) {
+            return ResponseEntity.status(400).body("chatRoomName is required");
+        }
+        if (chatRoomRepository.existsByChatRoomName(name)) {
             return ResponseEntity.status(403).body("Room already exists");
         }
         chatRoomRepository.save(new_chatRoom);
+        log.info("Chat room created: {}", name);
         return ResponseEntity.ok().body("chat room created successfully");
     }
 
+    //SEE AL CHATROOM
     public List<ChatRoom> getAllRooms() {
         return chatRoomRepository.findAll();
     }
 
-
+    // USER CHATOOM LIST
     public List<ChatRoom> getRoomsForUser(Long userId) {
         return chatRoomRepository.findRoomByUserId(userId);
     }
