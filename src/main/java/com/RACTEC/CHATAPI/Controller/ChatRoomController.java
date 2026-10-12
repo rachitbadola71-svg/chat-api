@@ -27,7 +27,7 @@ public class ChatRoomController {
         this.chatRoomRepository = chatRoomRepository;
     }
 
-
+    // CREATE A NEW CHATROOM
     @PostMapping("/api/chatroom")
     public ResponseEntity<?> createRoom(@RequestBody ChatRoom new_chatRoom) {
         String name = new_chatRoom.getChatRoomName();
@@ -42,17 +42,23 @@ public class ChatRoomController {
         return ResponseEntity.ok().body("chat room created successfully");
     }
 
+
+    // ALL CHATROOMS
     @GetMapping("/api/chatroom") //
     public List<ChatRoom> get_allrooms() {return chatRoomRepository.findAll();}
 
-    @GetMapping("/api/chatroom/user/{userId}") //TO GET ALL ROOMS WHITH USER ID
-public List<ChatRoom> getRoomsForUser(@PathVariable Long userId){return chatRoomRepository.findRoomByUserId(userId);}
+
+    //USER JOINED WHCH ROOMS
+    @GetMapping("/api/chatroom/user/{userId}")
+    public List<ChatRoom> getRoomsForUser(@PathVariable Long userId){return chatRoomRepository.findRoomByUserId(userId);}
 
 
     @Autowired
     private MessageRepository messageRepository;
 
-    @PutMapping("/api/chatroom/{id}/delete")                           //normal delete
+
+    //normal delete
+    @PutMapping("/api/chatroom/{id}/delete")
     public ResponseEntity<?> delete_chatroom(@PathVariable Long id) {
         Optional<ChatRoom> chatRoom = chatRoomRepository.findById(id);
         if (chatRoom.isPresent()) {
@@ -69,10 +75,11 @@ public List<ChatRoom> getRoomsForUser(@PathVariable Long userId){return chatRoom
     }
 
 
+    // change the room name
     @PutMapping("/api/chatroom/{id}")
     public ResponseEntity<?> update_chatroom(@PathVariable Long id, @RequestBody ChatRoom new_chatRoom){
         Optional<ChatRoom> old_chatroom = chatRoomRepository.findById(id);
-        if(old_chatroom.isPresent()){                          // change the room name
+        if(old_chatroom.isPresent()){
             ChatRoom chatroom = old_chatroom.get();
             if(new_chatRoom.getChatRoomName()!=null){ chatroom.setChatRoomName(new_chatRoom.getChatRoomName());
                 chatRoomRepository.save(chatroom);

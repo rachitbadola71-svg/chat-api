@@ -50,9 +50,15 @@ public class MessageService {
         return ResponseEntity.ok().body("message sent successfully");
     }
 
+
+
+
     public List<Message> getAllDeletedMessagesInRoom(Long roomid) {
         return messageRepository.findAllDeletedMessagesInRoom(roomid);
     }
+
+
+
 
     public ResponseEntity<?> searchMessageByKeyword(Long roomid, String keyword) {
         List<Message> results = messageRepository.searchMessagesByKeyword(roomid, keyword);
@@ -62,15 +68,23 @@ public class MessageService {
         return ResponseEntity.ok(results);
     }
 
+
+
+
     public ResponseEntity<?> getMessageCount(Long roomid) {
         Long count = messageRepository.countMessagesInRoom(roomid);
         return ResponseEntity.ok(count);
     }
 
+
+
     public ResponseEntity<?> getMessageCountBySender(Long senderid) {
         Long count = messageRepository.countMessagesBySender(senderid);
         return ResponseEntity.ok(count);
     }
+
+
+
 
     public ResponseEntity<?> deleteMessage(Long id) {
         Optional<Message> old_message = messageRepository.findById(id);
@@ -90,6 +104,9 @@ public class MessageService {
         }
         return ResponseEntity.status(404).body("no message found to deleted");
     }
+
+
+
 
     public ResponseEntity<?> updateMessage(Long id, Message new_message) {
         Optional<Message> old_message = messageRepository.findById(id);
@@ -113,6 +130,11 @@ public class MessageService {
         return ResponseEntity.notFound().build();
     }
 
+
+
+
+
+
     public ResponseEntity<?> pinMessage(Long messageId) {
         Optional<Message> old_message = messageRepository.findById(messageId);
         if (old_message.isPresent()) {
@@ -124,4 +146,14 @@ public class MessageService {
         }
         return ResponseEntity.status(404).body("no message found to pinned");
     }
+
+
+    public ResponseEntity<?> getAllMessagesInRoom(Long roomId) {
+        if (!chatRoomRepository.existsById(roomId)) {
+            return ResponseEntity.status(404).body("Room not found");
+        }
+        return ResponseEntity.ok(messageRepository.findAllMessagesInRoom(roomId));
+    }
+
+
 }
