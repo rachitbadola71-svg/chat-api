@@ -43,10 +43,13 @@ ChatRoomService {
         return chatRoomRepository.findAll();
     }
 
+
     public List<ChatRoom> getRoomsForUser(Long userId) {
         return chatRoomRepository.findRoomByUserId(userId);
     }
 
+
+    //DELETE THE CHATROOM
     public ResponseEntity<?> deleteChatroom(Long id) {
         Optional<ChatRoom> chatRoom = chatRoomRepository.findById(id);
         if (chatRoom.isPresent()) {
