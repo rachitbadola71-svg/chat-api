@@ -1,0 +1,10 @@
+spring:
+  application:
+    name: CHATAPI
+  datasource:
+    url: jdbc:mysql://localhost:3306/chatapi_db
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+  jpa:
+    hibernate:
+      ddl-auto: update
