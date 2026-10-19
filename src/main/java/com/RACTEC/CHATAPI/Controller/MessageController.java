@@ -12,6 +12,7 @@ import java.util.List;
 @RestController
 public class MessageController {
 
+
     private final MessageService messageService;
 
     public MessageController(MessageService messageService) {

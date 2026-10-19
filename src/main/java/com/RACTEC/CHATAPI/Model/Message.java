@@ -20,16 +20,17 @@ public class Message {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+
+
     private Long id;
 
 
     private String content ;
 
     private int  editCount = 0 ;
-    private boolean isPinned = false;
-    private boolean isDeleted = false;
 
-
+    @Enumerated(EnumType.STRING)
+    private MessageStatus status = MessageStatus.ACTIVE;
 
     @CreationTimestamp
     private LocalDateTime createdAt;
@@ -41,6 +42,8 @@ public class Message {
     @ManyToOne
     @JoinColumn(name="room_id")
     private ChatRoom room;
+
+
 
 
 

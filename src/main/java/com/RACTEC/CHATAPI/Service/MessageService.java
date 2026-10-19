@@ -2,6 +2,7 @@ package com.RACTEC.CHATAPI.Service;
 
 import com.RACTEC.CHATAPI.Model.ChatRoom;
 import com.RACTEC.CHATAPI.Model.Message;
+import com.RACTEC.CHATAPI.Model.MessageStatus;
 import com.RACTEC.CHATAPI.Model.Users;
 import com.RACTEC.CHATAPI.Repository.ChatRoomRepository;
 import com.RACTEC.CHATAPI.Repository.MessageRepository;
@@ -29,6 +30,7 @@ public class MessageService {
         this.chatRoomRepository = chatRoomRepository;
     }
 
+    //NEW MESSAGE
     public ResponseEntity<?> createMessage(Long userId, Long roomId, Message message) {
         if (message.getContent() == null || message.getContent().isEmpty()) {
             return ResponseEntity.status(400).body("please type some message");
@@ -52,14 +54,14 @@ public class MessageService {
 
 
 
-
+///ALL DELETED MESSAGE IN THE ROOM
     public List<Message> getAllDeletedMessagesInRoom(Long roomid) {
         return messageRepository.findAllDeletedMessagesInRoom(roomid);
     }
 
 
 
-
+//SEARCH THE MESSAGE
     public ResponseEntity<?> searchMessageByKeyword(Long roomid, String keyword) {
         List<Message> results = messageRepository.searchMessagesByKeyword(roomid, keyword);
         if (results.isEmpty()) {
@@ -70,14 +72,14 @@ public class MessageService {
 
 
 
-
+// NUMBER OF MESSAGES IN THE ROOM
     public ResponseEntity<?> getMessageCount(Long roomid) {
         Long count = messageRepository.countMessagesInRoom(roomid);
         return ResponseEntity.ok(count);
     }
 
 
-
+//NUMBER OF MESSAGE HY THE SENDER
     public ResponseEntity<?> getMessageCountBySender(Long senderid) {
         Long count = messageRepository.countMessagesBySender(senderid);
         return ResponseEntity.ok(count);
@@ -85,7 +87,7 @@ public class MessageService {
 
 
 
-
+//DELETE THE MESSAGE
     public ResponseEntity<?> deleteMessage(Long id) {
         Optional<Message> old_message = messageRepository.findById(id);
         if (old_message.isPresent()) {
@@ -95,7 +97,7 @@ public class MessageService {
             Duration delete_duration = Duration.between(message_time, delete_Time);
             long delete_window = delete_duration.toHours();
             if (delete_window < 1) {
-                message.setDeleted(true);
+                message.setStatus(MessageStatus.DELETED);
                 messageRepository.save(message);
                 return ResponseEntity.ok().body("Deleted Successfully");
             } else {
@@ -107,7 +109,7 @@ public class MessageService {
 
 
 
-
+//EDIT  A MESSAGE
     public ResponseEntity<?> updateMessage(Long id, Message new_message) {
         Optional<Message> old_message = messageRepository.findById(id);
         if (old_message.isPresent()) {
@@ -116,7 +118,6 @@ public class MessageService {
             LocalDateTime now = LocalDateTime.now();
             Duration message_duration = Duration.between(message_time, now);
             long edit_window = message_duration.toMinutes();
-
             if (10 > edit_window && message.getEditCount() == 0) {
                 message.setContent(new_message.getContent());
                 message.setEditCount(message.getEditCount() + 1);
@@ -133,21 +134,31 @@ public class MessageService {
 
 
 
-
-
+//PINNING A MESSAGE
     public ResponseEntity<?> pinMessage(Long messageId) {
         Optional<Message> old_message = messageRepository.findById(messageId);
         if (old_message.isPresent()) {
             Message message = old_message.get();
-            message.setPinned(!message.isPinned());
-            messageRepository.save(message);
-            String status = message.isPinned() ? "Pinned" : "Unpinned";
-            return ResponseEntity.ok().body("Message" + status + " Successfully");
+            if (message.getStatus() == MessageStatus.DELETED) {
+                return ResponseEntity.status(403).body("Cannot pin a deleted Message");
+            }
+
+            if (message.getStatus() == MessageStatus.PINNED) {
+                message.setStatus(MessageStatus.ACTIVE);
+                messageRepository.save(message);
+                return ResponseEntity.ok().body("message is now unpinned");
+            }
+
+            if (message.getStatus() == MessageStatus.ACTIVE) {
+                message.setStatus(MessageStatus.PINNED);
+                messageRepository.save(message);
+                return ResponseEntity.ok().body("message is now pinned");}
+
         }
-        return ResponseEntity.status(404).body("no message found to pinned");
+        return ResponseEntity.status(404).body("no message found to active ");
     }
 
-
+//ALL MESSAGES IN THE ROOM
     public ResponseEntity<?> getAllMessagesInRoom(Long roomId) {
         if (!chatRoomRepository.existsById(roomId)) {
             return ResponseEntity.status(404).body("Room not found");
