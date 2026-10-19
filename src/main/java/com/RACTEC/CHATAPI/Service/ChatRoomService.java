@@ -7,6 +7,7 @@ import com.RACTEC.CHATAPI.Repository.MessageRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.List;
 import java.util.Optional;
@@ -22,6 +23,7 @@ public class
 
 
 ChatRoomService {
+
 
     private final ChatRoomRepository chatRoomRepository;
     private final MessageRepository messageRepository;
@@ -46,17 +48,17 @@ ChatRoomService {
     }
 
     //SEE AL CHATROOM
-    public List<ChatRoom> getAllRooms() {
+    public List<ChatRoom> allRooms() {
         return chatRoomRepository.findAll();
     }
 
-    // USER CHATOOM LIST
+    //USER JOINED WHCH ROOMS
     public List<ChatRoom> getRoomsForUser(Long userId) {
         return chatRoomRepository.findRoomByUserId(userId);
     }
 
 
-    //DELETE THE CHATROOM
+    //normal delete  chatroom
     public ResponseEntity<?> deleteChatroom(Long id) {
         Optional<ChatRoom> chatRoom = chatRoomRepository.findById(id);
         if (chatRoom.isPresent()) {
@@ -72,6 +74,7 @@ ChatRoomService {
         return ResponseEntity.status(404).body("CHAT ROOM NOT FOUND");
     }
 
+    // update room name
     public ResponseEntity<?> updateChatroom(Long id, ChatRoom new_chatRoom) {
         Optional<ChatRoom> old_chatroom = chatRoomRepository.findById(id);
         if (old_chatroom.isPresent()) {
@@ -84,4 +87,8 @@ ChatRoomService {
         }
         return ResponseEntity.status(404).body("room not found");
     }
+
+
+
+
 }
