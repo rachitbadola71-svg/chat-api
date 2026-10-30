@@ -52,14 +52,10 @@ public class MessageService {
         return ResponseEntity.ok().body("message sent successfully");
     }
 
-
-
 ///ALL DELETED MESSAGE IN THE ROOM
     public List<Message> getAllDeletedMessagesInRoom(Long roomid) {
         return messageRepository.findAllDeletedMessagesInRoom(roomid);
     }
-
-
 
 //SEARCH THE MESSAGE
     public ResponseEntity<?> searchMessageByKeyword(Long roomid, String keyword) {
@@ -70,22 +66,17 @@ public class MessageService {
         return ResponseEntity.ok(results);
     }
 
-
-
 // NUMBER OF MESSAGES IN THE ROOM
     public ResponseEntity<?> getMessageCount(Long roomid) {
         Long count = messageRepository.countMessagesInRoom(roomid);
         return ResponseEntity.ok(count);
     }
 
-
 //NUMBER OF MESSAGE HY THE SENDER
     public ResponseEntity<?> getMessageCountBySender(Long senderid) {
         Long count = messageRepository.countMessagesBySender(senderid);
         return ResponseEntity.ok(count);
     }
-
-
 
 //DELETE THE MESSAGE
     public ResponseEntity<?> deleteMessage(Long id) {
@@ -106,8 +97,6 @@ public class MessageService {
         }
         return ResponseEntity.status(404).body("no message found to deleted");
     }
-
-
 
 //EDIT  A MESSAGE
     public ResponseEntity<?> updateMessage(Long id, Message new_message) {
@@ -130,9 +119,6 @@ public class MessageService {
         }
         return ResponseEntity.notFound().build();
     }
-
-
-
 
 //PINNING A MESSAGE
     public ResponseEntity<?> pinMessage(Long messageId) {
@@ -165,6 +151,8 @@ public class MessageService {
         }
         return ResponseEntity.ok(messageRepository.findAllMessagesInRoom(roomId));
     }
+
+
 
 
 }
