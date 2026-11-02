@@ -6,6 +6,7 @@ import com.RACTEC.CHATAPI.Repository.ChatRoomRepository;
 import com.RACTEC.CHATAPI.Repository.UsersRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -17,15 +18,42 @@ public class UserService {
 
     private final UsersRepository usersRepository;
     private final ChatRoomRepository chatRoomRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    public UserService(UsersRepository usersRepository, ChatRoomRepository chatRoomRepository) {
+    public UserService(UsersRepository usersRepository, ChatRoomRepository chatRoomRepository ,  PasswordEncoder passwordEncoder) {
         this.usersRepository = usersRepository;
         this.chatRoomRepository = chatRoomRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
+    //NEW USER
+    public  ResponseEntity<?> createUser(Users new_user) {
+        if (!usersRepository.existsByUsername(new_user.getUsername())) {    // only new username can be created
+           new_user.setPassword(passwordEncoder.encode(new_user.getPassword()));
+            usersRepository.save(new_user);
+            return ResponseEntity.ok().body("new user is created ");
+        }
+        return ResponseEntity.status(403).body("username is already in use");
+    }
 
+    //FAKE LOGIN
+    public ResponseEntity<?> login(Users login_user) {
+        Optional<Users> user = usersRepository.findByUsername(login_user.getUsername());
 
-//REMOVE FRIEND
+        if (user.isPresent()) {
+            if (user.get().getEmail().equals(login_user.getEmail())) {
+                if (passwordEncoder.matches(login_user.getPassword(), user.get().getPassword())) {
+
+                    return ResponseEntity.ok().body("login succesfull ");
+                }
+                return ResponseEntity.status(403).body("password is wrong!!!!");
+            }
+            return ResponseEntity.status(403).body("wrond email renter the email ");
+        }
+        return ResponseEntity.status(404).body("user does not exist");
+    }
+
+    //REMOVE FRIEND
     public ResponseEntity<?> removeFriend(Long userId, Long friendId) {
         Optional<Users> old_user = usersRepository.findById(userId);
         if (old_user.isPresent()) {
@@ -71,31 +99,8 @@ public class UserService {
         return ResponseEntity.status(404).body("User not found");
 }
 
-//NEW USER
-    public  ResponseEntity<?> createUser(Users new_user) {
-     if (!usersRepository.existsByUsername(new_user.getUsername())) {    // only new username can be created
-        usersRepository.save(new_user);
-        return ResponseEntity.ok().body("new user is created ");
-    }
-        return ResponseEntity.status(403).body("username is already in use");
-}
 
-//FAKE LOGIN
-    public ResponseEntity<?> login(Users login_user) {
-Optional<Users> user = usersRepository.findByUsername(login_user.getUsername());
 
-        if (user.isPresent()) {
-        if (user.get().getEmail().equals(login_user.getEmail())) {
-            if (user.get().getPassword().equals(login_user.getPassword())) {
-
-                return ResponseEntity.ok().body("login succesfull ");
-            }
-            return ResponseEntity.status(403).body("password is wrong!!!!");
-        }
-        return ResponseEntity.status(403).body("wrond email renter the email ");
-    }
-        return ResponseEntity.status(404).body("user does not exist");
-}
 
 // GET USERs
     public ResponseEntity<?> getUser(Long userId) {
@@ -131,7 +136,7 @@ Optional<Users> old_user = usersRepository.findById(userId);
 
         if (new_user_info.getEmail() != null) user.setEmail(new_user_info.getEmail());
 
-        if (new_user_info.getPassword() != null) user.setPassword(new_user_info.getPassword());
+        if (new_user_info.getPassword() != null) user.setPassword(passwordEncoder.encode(new_user_info.getPassword()));
 
         if (new_user_info.getChatRooms() != null) user.setChatRooms(new_user_info.getChatRooms());
         return ResponseEntity.ok(usersRepository.save(user));
