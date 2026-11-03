@@ -9,7 +9,6 @@ import com.RACTEC.CHATAPI.Repository.UsersRepository;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.catalina.User;
-import org.apache.el.lang.ELArithmetic;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
