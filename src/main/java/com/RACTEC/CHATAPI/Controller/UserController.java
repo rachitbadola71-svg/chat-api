@@ -1,6 +1,5 @@
 package com.RACTEC.CHATAPI.Controller;
-
-
+import org.springframework.security.core.Authentication;
 import com.RACTEC.CHATAPI.Model.ChatRoom;
 import com.RACTEC.CHATAPI.Model.Users;
 import com.RACTEC.CHATAPI.Repository.ChatRoomRepository;
@@ -9,6 +8,7 @@ import com.RACTEC.CHATAPI.Repository.UsersRepository;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.catalina.User;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -55,38 +55,45 @@ public class UserController {
         return userService.getAllUsers(roomId);
     }
 
-    @PutMapping("/api/users/{id}/delete")
-    public void delete_User(@PathVariable Long id) {           //delete the user
+    @PutMapping("/api/users/delete")
+    public void delete_User(@PathVariable Long id , Authentication authentication) {           //delete the user
+        Long userId =   (Long) authentication.getPrincipal();
         userService.deleteUser(id);
     }
 
-    @PutMapping("/api/users/{id}/update")
-    public  ResponseEntity<?> update_User(@PathVariable Long id, @RequestBody Users new_user_info) {
-      return   userService.updateUser(id, new_user_info);
+    @PutMapping("/api/users/update")
+    public  ResponseEntity<?> update_User(@RequestBody Users new_user_info,Authentication authentication ) {
+            Long userId =   (Long) authentication.getPrincipal();
+      return   userService.updateUser(userId, new_user_info);
     }
 
-    @PutMapping("/api/users/{userId}/join/{roomId}")
-    public ResponseEntity<?> joinRoom(@PathVariable Long roomId, @PathVariable Long userId) {
+    @PutMapping("/api/users/join/{roomId}")
+    public ResponseEntity<?> joinRoom(@PathVariable Long roomId, Authentication authentication) {
+        Long userId = (Long) authentication.getPrincipal();
         return userService.joinroom(roomId, userId);
     }
 
-    @PutMapping("/api/users/{userId}/leave/{roomId}")
-    public ResponseEntity<?> leaveRoom(@PathVariable Long roomId, @PathVariable Long userId) {
+    @PutMapping("/api/users/leave/{roomId}")
+    public ResponseEntity<?> leaveRoom(@PathVariable Long roomId,Authentication authentication) {
+        Long userId = (Long) authentication.getPrincipal();
     return userService.leaveRoom(userId, roomId);
     }
 
-    @PutMapping("/api/users/{userId}/addfriend/{friendId}")
-    public ResponseEntity<?> addFriend(@PathVariable Long userId, @PathVariable Long friendId) {
+    @PutMapping("/api/users/addfriend/{friendId}")
+    public ResponseEntity<?> addFriend(@PathVariable Long friendId , Authentication authentication) {
+        Long userId = (Long) authentication.getPrincipal();
         return userService.addfriend(userId, friendId);
     }
 
-    @GetMapping("/api/users/{userId}/friends")
-    public ResponseEntity<?> getFriends(@PathVariable Long userId) {
+    @GetMapping("/api/users/friends")
+    public ResponseEntity<?> getFriends(Authentication authentication) {
+        Long userId =   (Long) authentication.getPrincipal();
         return userService.getUser(userId);
     }
 
-    @PutMapping("/api/users/{userId}/removefriend/{friendId}")
-    public ResponseEntity<?> removeFriend(@PathVariable Long userId, @PathVariable Long friendId) {
+    @PutMapping("/api/users/removefriend/{friendId}")
+    public ResponseEntity<?> removeFriend( @PathVariable Long friendId , Authentication authentication) {
+        Long userId = (Long) authentication.getPrincipal();
         return userService.removeFriend(userId, friendId);
     }
 
