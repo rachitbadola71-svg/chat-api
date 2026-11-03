@@ -1,5 +1,6 @@
 package com.RACTEC.CHATAPI.Service;
 
+import com.RACTEC.CHATAPI.DTO.LoginResponse;
 import com.RACTEC.CHATAPI.Model.ChatRoom;
 import com.RACTEC.CHATAPI.Model.Users;
 import com.RACTEC.CHATAPI.Repository.ChatRoomRepository;
@@ -19,11 +20,13 @@ public class UserService {
     private final UsersRepository usersRepository;
     private final ChatRoomRepository chatRoomRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JwtService jwtService;
 
-    public UserService(UsersRepository usersRepository, ChatRoomRepository chatRoomRepository ,  PasswordEncoder passwordEncoder) {
+    public UserService(UsersRepository usersRepository, ChatRoomRepository chatRoomRepository ,  PasswordEncoder passwordEncoder ,  JwtService jwtService) {
         this.usersRepository = usersRepository;
         this.chatRoomRepository = chatRoomRepository;
         this.passwordEncoder = passwordEncoder;
+        this.jwtService = jwtService;
     }
 
     //NEW USER
@@ -44,7 +47,8 @@ public class UserService {
             if (user.get().getEmail().equals(login_user.getEmail())) {
                 if (passwordEncoder.matches(login_user.getPassword(), user.get().getPassword())) {
 
-                    return ResponseEntity.ok().body("login succesfull ");
+                    String token = jwtService.createToken(user.get().getId());
+                    return ResponseEntity.ok(new LoginResponse(token));
                 }
                 return ResponseEntity.status(403).body("password is wrong!!!!");
             }
