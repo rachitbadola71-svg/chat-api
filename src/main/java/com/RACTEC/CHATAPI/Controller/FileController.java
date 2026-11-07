@@ -1,56 +1,46 @@
 package com.RACTEC.CHATAPI.Controller;
 
-
-import org.springframework.data.jpa.domain.JpaSort;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import com.RACTEC.CHATAPI.Service.FileStorageService;                    // The desk that handles files. Type the imports yourself.
+import org.springframework.core.io.Resource;                             // The type Spring uses to send a file back.
+import org.springframework.http.MediaType;                               // The "kind of file" label (image/png...).
+import org.springframework.http.ResponseEntity;                          // Reply with a status code and a body.
+import org.springframework.web.bind.annotation.GetMapping;               // Marks a method that answers GET requests.
+import org.springframework.web.bind.annotation.PathVariable;             // Takes a blank out of the URL.
+import org.springframework.web.bind.annotation.PostMapping;              // Marks a method that answers POST requests.
+import org.springframework.web.bind.annotation.RequestMapping;           // Starting address for the class.
+import org.springframework.web.bind.annotation.RequestParam;             // Picks one field out of the request.
+import org.springframework.web.bind.annotation.RestController;           // Answers requests with data.
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/files")
 public class FileController {
 
-private static final Path UPLOAD_DIRECTORY = Paths.get("uploads")
-        .toAbsolutePath()
-        .normalize() ;
-
-private  static final Map<String,String> EXTENSIONS = Map.of(
-        "image/jpeg" , ".jpg" ,
-        "image/png" , "png",
-        "image/gif" , ".gif",
-        "image/webp" , ".webp"
-
-) ;
+    private final FileStorageService fileStorageService;
+    public FileController(FileStorageService fileStorageService) {this.fileStorageService = fileStorageService;}
 
 @PostMapping("/upload")
     public ResponseEntity<?> upload(@RequestParam("file") MultipartFile file) throws IOException {
 
-    if (file.isEmpty()) {return ResponseEntity.badRequest().body("File is empty");}
+    String error = fileStorageService.validateImage(file) ;
+    if(error!=null){return ResponseEntity.badRequest().body(error);}
 
-    String extension = EXTENSIONS.get(file.getContentType());
-    if (extension == null) {return ResponseEntity.badRequest().body("File type is not allowed only jpegpng gif webp are allowec");}
+    String savedName = fileStorageService.save(file);
+    return ResponseEntity.ok(Map.of("fileName",savedName));
 
-        String savedName = UUID.randomUUID().toString() + extension;
-
-    Files.createDirectories(UPLOAD_DIRECTORY);
-    file.transferTo(UPLOAD_DIRECTORY.resolve(savedName));
-
-    return ResponseEntity.ok(Map.of("filename" , savedName  )) ;
-
-
-}
-
-
+    }
+    @GetMapping("/{fileName}")
+    public ResponseEntity<Resource> view(@PathVariable String fileName) throws IOException {
+        Resource resource = fileStorageService.load(fileName);
+        if (resource == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType(fileStorageService.contentTypeOf(fileName)))   // Tell the receiver it is a picture.
+                .body(resource);
+    }
     }
 

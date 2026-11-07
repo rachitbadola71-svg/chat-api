@@ -44,6 +44,9 @@ public class Message {
     private ChatRoom room;
 
 
+    private String fileName ;
+    private String originalFileName ;
+
 
 }
 
