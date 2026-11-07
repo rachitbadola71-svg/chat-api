@@ -11,6 +11,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import com.RACTEC.CHATAPI.DTO.MessageResponse;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -23,11 +26,13 @@ public class MessageService {
     private final MessageRepository messageRepository;
     private final UsersRepository usersRepository;
     private final ChatRoomRepository chatRoomRepository;
+    private final FileStorageService fileStorageService;
 
-    public MessageService(MessageRepository messageRepository, UsersRepository usersRepository, ChatRoomRepository chatRoomRepository) {
+    public MessageService(MessageRepository messageRepository, UsersRepository usersRepository, ChatRoomRepository chatRoomRepository , FileStorageService fileStorageService )  {
         this.messageRepository = messageRepository;
         this.usersRepository = usersRepository;
         this.chatRoomRepository = chatRoomRepository;
+        this.fileStorageService = fileStorageService;
     }
 
     private MessageResponse toResponse(Message m) {
@@ -44,11 +49,13 @@ public class MessageService {
                 m.getCreatedAt(),
                 m.getEditCount(),
                 senderId,
-                senderUsername);
+                senderUsername,
+                m.getFileName(),
+                m.getOriginalFileName());
     }
 
     //NEW MESSAGE
-    public ResponseEntity<?> createMessage(Long userId, Long roomId, Message message) {
+   /* public ResponseEntity<?> createMessage(Long userId, Long roomId, Message message) {
         if (message.getContent() == null || message.getContent().isEmpty()) {
             return ResponseEntity.status(400).body("please type some message");
         }
@@ -69,7 +76,51 @@ public class MessageService {
         messageRepository.save(newMessage);
         log.info("Message sent by user {} in room {}", userId, roomId);
         return ResponseEntity.ok().body("message sent successfully");
+    }*/
+
+    // CREATE A FILE MESSAGE
+    public ResponseEntity<?> createMessage(Long userId, Long roomId, String content, MultipartFile file) throws IOException {
+        boolean hasText = content != null && !content.isBlank();
+        boolean hasFile = file != null && !file.isEmpty();
+
+        if (!hasText && !hasFile) {
+            return ResponseEntity.status(400).body("send some text or a file");
+        }
+
+        if (hasFile) {
+            String error = fileStorageService.validateImage(file);
+            if (error != null) {return ResponseEntity.status(400).body(error);}
+        }
+
+        Optional<Users> sender = usersRepository.findById(userId);
+        if (sender.isEmpty()) {
+            log.warn("Message creation failed: no such user {}", userId);
+            return ResponseEntity.status(404).body("no such user");
+        }
+
+        Optional<ChatRoom> room = chatRoomRepository.findById(roomId);
+        if (room.isEmpty()) {
+            log.warn("Message creation failed: no such room {}", roomId);
+            return ResponseEntity.status(404).body("no such room exists");
+        }
+
+        Message newMessage = new Message();
+        newMessage.setSender(sender.get());
+        newMessage.setRoom(room.get());
+
+        if (hasText) {newMessage.setContent(content);}
+
+        if (hasFile) {
+            String savedName = fileStorageService.save(file);
+            newMessage.setFileName(savedName);
+            newMessage.setOriginalFileName(file.getOriginalFilename());
+        }
+
+        Message saved = messageRepository.save(newMessage);
+        log.info("Message sent by user {} in room {}", userId, roomId);
+        return ResponseEntity.ok(toResponse(saved));
     }
+
 
 ///ALL DELETED MESSAGE IN THE ROOM
     public List<MessageResponse> getAllDeletedMessagesInRoom(Long roomid) {

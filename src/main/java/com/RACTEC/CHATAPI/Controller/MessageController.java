@@ -7,7 +7,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;   // **** NEW import
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 
 @Slf4j
@@ -20,27 +22,26 @@ public class MessageController {
         this.messageService = messageService;
     }
 
-    //SEND MESSAGE IN A ROOM
 
+    //SEND MESSAGE: text only, file only, or both
     @PostMapping("/api/message/send/{roomId}")
     public ResponseEntity<?> create_Message(@PathVariable Long roomId,
-                                            @RequestBody Message message,
-                                            Authentication authentication) {   // **** NEW parameter
-        Long userId = (Long) authentication.getPrincipal();                    // **** NEW line
-        return messageService.createMessage(userId, roomId, message);
+                                            @RequestParam(value = "content", required = false) String content,
+                                            @RequestParam(value = "file", required = false) MultipartFile file,
+                                            Authentication authentication) throws IOException {
+        Long userId = (Long) authentication.getPrincipal();
+        return messageService.createMessage(userId, roomId, content, file);
     }
 
-    //GET ALL DELETED MESSAGE IN THE ROOM
-    @GetMapping("/api/message/alldeletedmessages/{roomid}")
-    public List<MessageResponse> getAllDeletedMessagesInRoom(@PathVariable Long roomid) {
-        return messageService.getAllDeletedMessagesInRoom(roomid);
-    }
+    //SEND MESSAGE IN A ROOM
+    /*
 
     //SEARCH MESSAGES BY KEYWORD
     @GetMapping("/api/message/{roomid}/search")
     public ResponseEntity<?> searchMessageByKeyword(@PathVariable Long roomid, @RequestParam String keyword) {
         return messageService.searchMessageByKeyword(roomid, keyword);
     }
+*/
 
     //TOTAL COUNT OF MESSAGE IN A ROOM
     @GetMapping("/api/message/{roomid}/count")
