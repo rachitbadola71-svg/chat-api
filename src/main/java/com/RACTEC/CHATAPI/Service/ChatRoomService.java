@@ -34,7 +34,7 @@ ChatRoomService {
     }
 
     // CREATE A NEW CHATROOM
-    public ResponseEntity<?> createRoom(ChatRoom new_chatRoom) {
+    public ResponseEntity<?> createRoom(ChatRoom new_chatRoom, Long userId) {
         String name = new_chatRoom.getChatRoomName();
         if (name == null || name.isBlank()) {
             return ResponseEntity.status(400).body("chatRoomName is required");
@@ -42,7 +42,12 @@ ChatRoomService {
         if (chatRoomRepository.existsByChatRoomName(name)) {
             return ResponseEntity.status(403).body("Room already exists");
         }
-        chatRoomRepository.save(new_chatRoom);
+
+        ChatRoom room = new ChatRoom();
+        room.setChatRoomName(name);
+        room.setCreatedBy(userId);
+        chatRoomRepository.save(room);
+
         log.info("Chat room created: {}", name);
         return ResponseEntity.ok().body("chat room created successfully");
     }
@@ -59,10 +64,13 @@ ChatRoomService {
 
 
     //normal delete  chatroom
-    public ResponseEntity<?> deleteChatroom(Long id) {
+    public ResponseEntity<?> deleteChatroom(Long id , Long userId) {
         Optional<ChatRoom> chatRoom = chatRoomRepository.findById(id);
         if (chatRoom.isPresent()) {
             ChatRoom room = chatRoom.get();
+            if (!userId.equals(room.getCreatedBy())) {
+                return ResponseEntity.status(403).body("Only the creator can delete this room");
+            }
             if (room.getUsers().isEmpty()) {
                 List<Message> messagesInRoom = messageRepository.findAllMessagesInRoom(id);
                 messageRepository.deleteAll(messagesInRoom);
@@ -75,10 +83,13 @@ ChatRoomService {
     }
 
     // update room name
-    public ResponseEntity<?> updateChatroom(Long id, ChatRoom new_chatRoom) {
+    public ResponseEntity<?> updateChatroom(Long id, ChatRoom new_chatRoom,Long userId) {
         Optional<ChatRoom> old_chatroom = chatRoomRepository.findById(id);
         if (old_chatroom.isPresent()) {
             ChatRoom chatroom = old_chatroom.get();
+            if (!userId.equals(chatroom.getCreatedBy())) {
+                return ResponseEntity.status(403).body("Only the creator can rename this room");
+            }
             if (new_chatRoom.getChatRoomName() != null) {
                 chatroom.setChatRoomName(new_chatRoom.getChatRoomName());
                 chatRoomRepository.save(chatroom);

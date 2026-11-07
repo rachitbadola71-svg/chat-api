@@ -1,6 +1,7 @@
 package com.RACTEC.CHATAPI.Service;
 
 import com.RACTEC.CHATAPI.DTO.LoginResponse;
+import com.RACTEC.CHATAPI.DTO.UserResponse;
 import com.RACTEC.CHATAPI.Model.ChatRoom;
 import com.RACTEC.CHATAPI.Model.Users;
 import com.RACTEC.CHATAPI.Repository.ChatRoomRepository;
@@ -106,20 +107,28 @@ public class UserService {
 
 
 
-// GET USERs
+// GET Uers's frnd
     public ResponseEntity<?> getUser(Long userId) {
     Optional<Users> old_user = usersRepository.findById(userId);
         if (old_user.isPresent()) {
         Users user = old_user.get();
-        return ResponseEntity.ok().body(user.getFriends());       // bro how many friend u got ??
+
+            List<UserResponse> friends = user.getFriends()
+                    .stream()
+                    .map(friend -> new UserResponse(friend.getId(), friend.getUsername()))
+                    .toList();
+        return ResponseEntity.ok().body(friends);       // bro how many friend u got ??
     }
         return ResponseEntity.status(404).body("user dont exist");
 
 }
 
 // GET USERS IN THE  ROOM
-    public List<Users> getAllUsers(Long roomId) {
-    return usersRepository.getAllUsersInRoom(roomId);
+    public List<UserResponse> getAllUsers(Long roomId) {
+        return usersRepository.getAllUsersInRoom(roomId)
+                .stream()
+                .map(user -> new UserResponse(user.getId(),user.getUsername()) )
+                .toList();
 }
 
 //DELETE THE USER
@@ -192,9 +201,12 @@ public ResponseEntity<?>  joinroom(Long roomId, Long userId) {
     }
         return ResponseEntity.status(404).body("User not found");
 }
-    //GET all  USER  in server
-    public List <Users> getAllUsersinserver() {
-        return usersRepository.findAll();
+    //GET all USER in server
+    public List<UserResponse> getAllUsersinserver() {
+        return usersRepository.findAll()
+                .stream()
+                .map(user -> new UserResponse(user.getId(), user.getUsername()))
+                .toList();
     }
 
 

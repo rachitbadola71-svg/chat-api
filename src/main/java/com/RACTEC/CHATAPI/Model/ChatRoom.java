@@ -24,6 +24,7 @@ public class ChatRoom {
     private Long id;
 
      String  chatRoomName;
+private Long createdBy ;
 
     @CreationTimestamp
     private LocalDateTime createdAt;

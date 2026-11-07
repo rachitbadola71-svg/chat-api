@@ -5,10 +5,8 @@ import com.RACTEC.CHATAPI.Model.Users;
 import com.RACTEC.CHATAPI.Repository.ChatRoomRepository;
 import com.RACTEC.CHATAPI.Repository.MessageRepository;
 import com.RACTEC.CHATAPI.Repository.UsersRepository;
-
+import com.RACTEC.CHATAPI.DTO.UserResponse;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.catalina.User;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -46,12 +44,12 @@ public class UserController {
 
 
     @GetMapping("/api/users/getuser")
-    public List<Users> get_Users() {
+    public List<UserResponse> get_Users() {
         return userService.getAllUsersinserver() ;
     }
 
     @GetMapping("/api/chatroom/{roomId}/users")
-    public List<Users> getUsersInRoom(@PathVariable Long roomId) {                     //getg all users in the roomid
+    public List<UserResponse> getUsersInRoom(@PathVariable Long roomId) {                     //getg all users in the roomid
         return userService.getAllUsers(roomId);
     }
 

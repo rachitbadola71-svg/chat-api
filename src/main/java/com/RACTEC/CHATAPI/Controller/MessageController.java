@@ -1,9 +1,11 @@
 package com.RACTEC.CHATAPI.Controller;
 
+import com.RACTEC.CHATAPI.DTO.MessageResponse;
 import com.RACTEC.CHATAPI.Model.Message;
 import com.RACTEC.CHATAPI.Service.MessageService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;   // **** NEW import
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -12,7 +14,6 @@ import java.util.List;
 @RestController
 public class MessageController {
 
-
     private final MessageService messageService;
 
     public MessageController(MessageService messageService) {
@@ -20,14 +21,18 @@ public class MessageController {
     }
 
     //SEND MESSAGE IN A ROOM
-    @PostMapping("/api/message/send/{userId}/{roomId}")
-    public ResponseEntity<?> create_Message(@PathVariable Long userId, @PathVariable Long roomId, @RequestBody Message message) {
+
+    @PostMapping("/api/message/send/{roomId}")
+    public ResponseEntity<?> create_Message(@PathVariable Long roomId,
+                                            @RequestBody Message message,
+                                            Authentication authentication) {   // **** NEW parameter
+        Long userId = (Long) authentication.getPrincipal();                    // **** NEW line
         return messageService.createMessage(userId, roomId, message);
     }
 
     //GET ALL DELETED MESSAGE IN THE ROOM
     @GetMapping("/api/message/alldeletedmessages/{roomid}")
-    public List<Message> getAllDeletedMessagesInRoom(@PathVariable Long roomid) {
+    public List<MessageResponse> getAllDeletedMessagesInRoom(@PathVariable Long roomid) {
         return messageService.getAllDeletedMessagesInRoom(roomid);
     }
 
@@ -36,6 +41,7 @@ public class MessageController {
     public ResponseEntity<?> searchMessageByKeyword(@PathVariable Long roomid, @RequestParam String keyword) {
         return messageService.searchMessageByKeyword(roomid, keyword);
     }
+
     //TOTAL COUNT OF MESSAGE IN A ROOM
     @GetMapping("/api/message/{roomid}/count")
     public ResponseEntity<?> getMessageCount(@PathVariable Long roomid) {
@@ -48,22 +54,22 @@ public class MessageController {
         return messageService.getMessageCountBySender(senderid);
     }
 
-    //DELETE THE MESSAGE
     @PutMapping("/api/message/{id}/delete")
-    public ResponseEntity<?> delete_Message(@PathVariable Long id) {
-        return messageService.deleteMessage(id);
+    public ResponseEntity<?> delete_Message(@PathVariable Long id, Authentication authentication) {
+        Long userId = (Long) authentication.getPrincipal();
+        return messageService.deleteMessage(id, userId);
     }
 
-    //EDIT A MESSAGE
     @PutMapping("/api/message/{id}/edit")
-    public ResponseEntity<?> update_Message(@PathVariable Long id, @RequestBody Message new_message) {
-        return messageService.updateMessage(id, new_message);
+    public ResponseEntity<?> update_Message(@PathVariable Long id, @RequestBody Message new_message, Authentication authentication) {
+        Long userId = (Long) authentication.getPrincipal();
+        return messageService.updateMessage(id, new_message, userId);
     }
 
-    //PIN A MESSAGE
     @PutMapping("/api/message/{messageId}/pin")
-    public ResponseEntity<?> pinMessage(@PathVariable Long messageId) {
-        return messageService.pinMessage(messageId);
+    public ResponseEntity<?> pinMessage(@PathVariable Long messageId, Authentication authentication) {
+        Long userId = (Long) authentication.getPrincipal();
+        return messageService.pinMessage(messageId, userId);
     }
 
     //GET ALL MESSAGES IN A ROOM
@@ -72,4 +78,3 @@ public class MessageController {
         return messageService.getAllMessagesInRoom(roomId);
     }
 }
-
