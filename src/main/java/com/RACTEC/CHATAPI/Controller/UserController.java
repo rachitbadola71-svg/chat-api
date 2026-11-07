@@ -1,4 +1,6 @@
 package com.RACTEC.CHATAPI.Controller;
+import com.RACTEC.CHATAPI.DTO.RegisterRequest;
+import jakarta.validation.Valid;
 import org.springframework.security.core.Authentication;
 import com.RACTEC.CHATAPI.Model.ChatRoom;
 import com.RACTEC.CHATAPI.Model.Users;
@@ -32,8 +34,8 @@ public class UserController {
     }
 
     @PostMapping("/api/users/new")
-    public ResponseEntity<?> create_User(@RequestBody Users new_user) {
-        return userService.createUser(new_user);
+    public ResponseEntity<?> create_User(@Valid@RequestBody RegisterRequest request) {
+        return userService.createUser(request);
     }
 
 

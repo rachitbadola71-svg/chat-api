@@ -1,6 +1,7 @@
 package com.RACTEC.CHATAPI.Service;
 
 import com.RACTEC.CHATAPI.DTO.LoginResponse;
+import com.RACTEC.CHATAPI.DTO.RegisterRequest;
 import com.RACTEC.CHATAPI.DTO.UserResponse;
 import com.RACTEC.CHATAPI.Model.ChatRoom;
 import com.RACTEC.CHATAPI.Model.Users;
@@ -31,10 +32,14 @@ public class UserService {
     }
 
     //NEW USER
-    public  ResponseEntity<?> createUser(Users new_user) {
-        if (!usersRepository.existsByUsername(new_user.getUsername())) {    // only new username can be created
-           new_user.setPassword(passwordEncoder.encode(new_user.getPassword()));
-            usersRepository.save(new_user);
+    public  ResponseEntity<?> createUser(RegisterRequest request) {
+        if (!usersRepository.existsByUsername(request.username())) {    // only new username can be created
+            Users  newUser = new Users();
+            newUser.setUsername(request.username());
+            newUser.setEmail(request.email());
+            newUser.setPassword(passwordEncoder.encode(request.password()));
+            usersRepository.save(newUser);
+
             return ResponseEntity.ok().body("new user is created ");
         }
         return ResponseEntity.status(403).body("username is already in use");
