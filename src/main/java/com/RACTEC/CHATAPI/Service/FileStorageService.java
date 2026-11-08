@@ -36,11 +36,11 @@ public class FileStorageService {
     public String validateFile(MultipartFile file){
         if(file == null || file.isEmpty()){return "file is empty";}
         String type = file.getContentType();
-        if(type == null || !EXTENSIONS.containsKey(type))return "file is empty";
+        if(type == null || !EXTENSIONS.containsKey(type))return "file type is mull or not allowed";
         long size = file.getSize();
-        if(type.startsWith("image/") && size> 5 * 1024 * 1024)return "image size is too large max 55 mb is aloowed";
-        if(type.startsWith("audio/") && size> 15 * 1024 * 1024)return "audio size is too large max 15 mb is aloowed";
-        if(type.startsWith("video/") && size> 25 * 1024 * 1024)return "video size is too large max 25 mb is aloowed";
+        if(type.startsWith("image/") && size> 5 * 1024 * 1024)return "image size is too large max 55 mb is allowed";
+        if(type.startsWith("audio/") && size> 15 * 1024 * 1024)return "audio size is too large max 15 mb is allowed";
+        if(type.startsWith("video/") && size> 25 * 1024 * 1024)return "video size is too large max 25 mb is allowed";
         return null ;
     }
 

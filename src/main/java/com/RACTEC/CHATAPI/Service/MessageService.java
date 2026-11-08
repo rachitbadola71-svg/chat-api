@@ -7,11 +7,13 @@ import com.RACTEC.CHATAPI.Model.Users;
 import com.RACTEC.CHATAPI.Repository.ChatRoomRepository;
 import com.RACTEC.CHATAPI.Repository.MessageRepository;
 import com.RACTEC.CHATAPI.Repository.UsersRepository;
+import com.RACTEC.CHATAPI.websocket.ChatWebSocketHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import com.RACTEC.CHATAPI.DTO.MessageResponse;
 import org.springframework.web.multipart.MultipartFile;
+import tools.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
 import java.time.Duration;
@@ -27,12 +29,16 @@ public class MessageService {
     private final UsersRepository usersRepository;
     private final ChatRoomRepository chatRoomRepository;
     private final FileStorageService fileStorageService;
+    private final ChatWebSocketHandler chatHandler; // the switchboard from Task 2, used to push to a room
+    private final ObjectMapper objectMapper;        // Spring's tool that turns a Java object into JSON text
 
-    public MessageService(MessageRepository messageRepository, UsersRepository usersRepository, ChatRoomRepository chatRoomRepository , FileStorageService fileStorageService )  {
+    public MessageService(MessageRepository messageRepository, UsersRepository usersRepository, ChatRoomRepository chatRoomRepository , FileStorageService fileStorageService , ChatWebSocketHandler chatHandler, ObjectMapper objectMapper )  {
         this.messageRepository = messageRepository;
         this.usersRepository = usersRepository;
         this.chatRoomRepository = chatRoomRepository;
         this.fileStorageService = fileStorageService;
+        this.chatHandler = chatHandler;
+        this.objectMapper = objectMapper;
     }
 
     private MessageResponse toResponse(Message m) {
@@ -78,19 +84,9 @@ public class MessageService {
         return ResponseEntity.ok().body("message sent successfully");
     }*/
 
-    // CREATE A FILE MESSAGE
+    // SEND A MESSAGE  CONTENT OR FILE TYPE OR BPTH
     public ResponseEntity<?> createMessage(Long userId, Long roomId, String content, MultipartFile file) throws IOException {
-        boolean hasText = content != null && !content.isBlank();
-        boolean hasFile = file != null && !file.isEmpty();
 
-        if (!hasText && !hasFile) {
-            return ResponseEntity.status(400).body("send some text or a file");
-        }
-
-        if (hasFile) {
-            String error = fileStorageService.validateFile(file);
-            if (error != null) {return ResponseEntity.status(400).body(error);}
-        }
 
         Optional<Users> sender = usersRepository.findById(userId);
         if (sender.isEmpty()) {
@@ -103,6 +99,21 @@ public class MessageService {
             log.warn("Message creation failed: no such room {}", roomId);
             return ResponseEntity.status(404).body("no such room exists");
         }
+
+        boolean hasText = content != null && !content.isBlank();
+        boolean hasFile = file != null && !file.isEmpty();
+
+        if (!hasText && !hasFile) {
+            return ResponseEntity.status(400).body("send some text or a file");
+        }
+
+        if (hasFile) {
+            String error = fileStorageService.validateFile(file);
+            if (error != null) {return ResponseEntity.status(400).body(error);}
+
+        }
+
+
 
         Message newMessage = new Message();
         newMessage.setSender(sender.get());
@@ -118,9 +129,20 @@ public class MessageService {
 
         Message saved = messageRepository.save(newMessage);
         log.info("Message sent by user {} in room {}", userId, roomId);
-        return ResponseEntity.ok(toResponse(saved));
+
+        MessageResponse response = toResponse(saved);
+        pushToRoom(roomId,response) ;
+        return ResponseEntity.ok(response);
     }
 
+    private void pushToRoom(Long roomId, MessageResponse response) {
+        try{
+            String json = objectMapper.writeValueAsString(response);
+            chatHandler.sendToRoom(roomId, json);
+        }catch(Exception e){
+            log.warn("LIVE PUSH IS FAILED FOR ROOM {}", roomId,e);
+        }
+    }
 
 ///ALL DELETED MESSAGE IN THE ROOM
     public List<MessageResponse> getAllDeletedMessagesInRoom(Long roomid) {
