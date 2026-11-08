@@ -21,24 +21,32 @@ public class FileStorageService {
 
     private  static final Map<String,String> EXTENSIONS = Map.of(
             "image/jpeg" , ".jpg" ,
-            "image/png" , "png",
+            "image/png" , ".png",
             "image/gif" , ".gif",
-            "image/webp" , ".webp"
+            "image/webp" , ".webp",
+            "audio/mpeg" , ".mp3",
+            "audio/wav" , ".wav",
+            "audio/x-wav" , ".wav",
+            "audio/ogg" , ".ogg",
+            "audio/mp4" , ".m4a",
+            "video/mp4" , ".mp4"
 
     ) ;
 
-    public String validateImage(MultipartFile file){
+    public String validateFile(MultipartFile file){
         if(file == null || file.isEmpty()){return "file is empty";}
-
         String type = file.getContentType();
-        if(type == null || !EXTENSIONS.containsKey(type))  {return "file tyoe " + type + "is nor allowed";}
-
+        if(type == null || !EXTENSIONS.containsKey(type))return "file is empty";
+        long size = file.getSize();
+        if(type.startsWith("image/") && size> 5 * 1024 * 1024)return "image size is too large max 55 mb is aloowed";
+        if(type.startsWith("audio/") && size> 15 * 1024 * 1024)return "audio size is too large max 15 mb is aloowed";
+        if(type.startsWith("video/") && size> 25 * 1024 * 1024)return "video size is too large max 25 mb is aloowed";
         return null ;
     }
 
     public String save(MultipartFile file) throws IOException {
         String extension = EXTENSIONS.get(file.getContentType());
-        String savedName = UUID.randomUUID().toString() + "." + extension;
+        String savedName = UUID.randomUUID().toString() +   extension;
         Files.createDirectories(UPLOAD_DIRECTORY);
         file.transferTo(UPLOAD_DIRECTORY.resolve(savedName));
         return savedName;

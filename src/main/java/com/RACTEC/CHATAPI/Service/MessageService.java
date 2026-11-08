@@ -88,7 +88,7 @@ public class MessageService {
         }
 
         if (hasFile) {
-            String error = fileStorageService.validateImage(file);
+            String error = fileStorageService.validateFile(file);
             if (error != null) {return ResponseEntity.status(400).body(error);}
         }
 

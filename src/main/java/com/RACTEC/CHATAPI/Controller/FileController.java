@@ -25,7 +25,7 @@ public class FileController {
 @PostMapping("/upload")
     public ResponseEntity<?> upload(@RequestParam("file") MultipartFile file) throws IOException {
 
-    String error = fileStorageService.validateImage(file) ;
+    String error = fileStorageService.validateFile(file) ;
     if(error!=null){return ResponseEntity.badRequest().body(error);}
 
     String savedName = fileStorageService.save(file);
@@ -39,7 +39,7 @@ public class FileController {
             return ResponseEntity.notFound().build();
         }
         return ResponseEntity.ok()
-                .contentType(MediaType.parseMediaType(fileStorageService.contentTypeOf(fileName)))   // Tell the receiver it is a picture.
+                .contentType(MediaType.parseMediaType(fileStorageService.contentTypeOf(fileName)))   // Tell the receiver the file type
                 .body(resource);
     }
     }
