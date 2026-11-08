@@ -1,5 +1,6 @@
 package com.RACTEC.CHATAPI.Controller;
 import com.RACTEC.CHATAPI.DTO.RegisterRequest;
+import com.RACTEC.CHATAPI.DTO.UpdateRequest;
 import jakarta.validation.Valid;
 import org.springframework.security.core.Authentication;
 import com.RACTEC.CHATAPI.Model.ChatRoom;
@@ -62,9 +63,9 @@ public class UserController {
     }
 
     @PutMapping("/api/users/update")
-    public  ResponseEntity<?> update_User(@RequestBody Users new_user_info,Authentication authentication ) {
+    public  ResponseEntity<?> update_User(@Valid @RequestBody UpdateRequest request, Authentication authentication ) {
             Long userId =   (Long) authentication.getPrincipal();
-      return   userService.updateUser(userId, new_user_info);
+      return   userService.updateUser(userId, request);
     }
 
     @PutMapping("/api/users/join/{roomId}")

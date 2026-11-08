@@ -2,6 +2,7 @@ package com.RACTEC.CHATAPI.Service;
 
 import com.RACTEC.CHATAPI.DTO.LoginResponse;
 import com.RACTEC.CHATAPI.DTO.RegisterRequest;
+import com.RACTEC.CHATAPI.DTO.UpdateRequest;
 import com.RACTEC.CHATAPI.DTO.UserResponse;
 import com.RACTEC.CHATAPI.Model.ChatRoom;
 import com.RACTEC.CHATAPI.Model.Users;
@@ -143,20 +144,19 @@ public class UserService {
 
 
 // UPDATE THE USER
-public  ResponseEntity<?>  updateUser(Long userId , Users new_user_info) {
+public  ResponseEntity<?>  updateUser(Long userId , UpdateRequest request) {
 Optional<Users> old_user = usersRepository.findById(userId);
 
         if (old_user.isPresent()) {
         Users user = old_user.get();
 // next extra  4 if because  there was bug thay when we change somehting for user  like email or password or name
         // it changes but it puts nulls in the old place if we change name other 2 things become null cuz  there was no input so json thinks its null
-        if (new_user_info.getUsername() != null) user.setUsername(new_user_info.getUsername());
+        if (request.getUsername() != null) user.setUsername(request.getUsername());
 
-        if (new_user_info.getEmail() != null) user.setEmail(new_user_info.getEmail());
+        if (request.getEmail() != null) user.setEmail(request.getEmail());
 
-        if (new_user_info.getPassword() != null) user.setPassword(passwordEncoder.encode(new_user_info.getPassword()));
+        if (request.getPassword() != null) user.setPassword(passwordEncoder.encode(request.getPassword()));
 
-        if (new_user_info.getChatRooms() != null) user.setChatRooms(new_user_info.getChatRooms());
         return ResponseEntity.ok(usersRepository.save(user));
     }
         return ResponseEntity.status(404).body("user no exist");
