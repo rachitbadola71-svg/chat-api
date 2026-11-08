@@ -19,7 +19,7 @@ public class JwtHandshakeInterceptor implements HandshakeInterceptor {
 
     @Override
     public boolean beforeHandshake(ServerHttpRequest request, ServerHttpResponse response, WebSocketHandler wsHandler, Map<String, Object> attributes) throws Exception {
-        System.out.println("GUARD REACHED: " + request.getURI());
+
         MultiValueMap<String,String> params =
                 UriComponentsBuilder.fromUri(request.getURI()).build().getQueryParams();
 
