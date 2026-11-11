@@ -23,6 +23,6 @@ public class WebSocketConfig implements WebSocketConfigurer {
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry){
         registry.addHandler(chatHandler,"/ws")
                 .addInterceptors(jwtInterceptor)
-                .setAllowedOrigins("*") ;
+                .setAllowedOrigins("http://localhost:3000") ;
 }
 }
